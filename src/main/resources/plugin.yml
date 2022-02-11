@@ -1,0 +1,4 @@
+name: ItemProvider
+version: '${project.version}'
+main: io.github.reconsolidated.itemprovider.ItemProvider
+api-version: 1.18
