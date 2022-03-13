@@ -10,13 +10,12 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.List;
 
 public class ExampleItems {
-    public static void init(Plugin plugin, File dataFolder) {
+    public static void init(ItemProvider plugin, File dataFolder) {
         YamlConfiguration config = CustomConfig.loadCustomConfig("example", dataFolder, true);
         assert config != null : "Couldn't load config: example";
         ItemStack plainPickaxe = new ItemStack(Material.DIAMOND_PICKAXE);
@@ -38,6 +37,8 @@ public class ExampleItems {
         chestPlateWithKey.addItemFlags(ItemFlag.HIDE_DESTROYS);
         config.set("chestplate_buffed", chestPlateWithKey);
 
+        ItemStack money = plugin.getItem("money", "400$", 400);
+        config.set("money_example", money);
         CustomConfig.saveCustomConfig("example", dataFolder, config);
     }
 }
