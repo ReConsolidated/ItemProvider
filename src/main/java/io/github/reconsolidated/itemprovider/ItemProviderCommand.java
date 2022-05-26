@@ -1,11 +1,13 @@
 package io.github.reconsolidated.itemprovider;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -59,12 +61,41 @@ public class ItemProviderCommand implements CommandExecutor {
                 }
             }
         }
+        if (args[0].equalsIgnoreCase("give")) {
+            if (args.length < 3) {
+                sender.sendMessage(ChatColor.RED + "Correct usage: ");
+                sender.sendMessage(ChatColor.AQUA + "/itemprovider give <category> <name> <player> [amount=1]  - gives specified player item");
+            } else {
+                int amount = 1;
+                if (args.length == 5) {
+                    try {
+                        amount = Integer.parseInt(args[4]);
+                    } catch (NumberFormatException e) {
+                        amount = 1;
+                    }
+                }
+                String playerName = args[3];
+                String name = args[2];
+                String category = args[1];
+                ItemStack item = itemProvider.getItem(category, name);
+                item.setAmount(amount);
+
+                Player player = Bukkit.getPlayer(playerName);
+                if (player == null || !player.isOnline()) {
+                    sender.sendMessage(ChatColor.RED + "Ten gracz nie jest online!");
+                } else {
+                    player.getInventory().addItem(item);
+                    sender.sendMessage(ChatColor.GREEN + "Item given!");
+                }
+            }
+        }
         return true;
     }
 
     private void onHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.AQUA + "ItemProvider help: ");
         sender.sendMessage(ChatColor.AQUA + "/itemprovider add <category> [name] - dodaje item z ręki");
-        sender.sendMessage(ChatColor.AQUA + "/itemprovider get <category> <name> - dodaje item z ręki");
+        sender.sendMessage(ChatColor.AQUA + "/itemprovider get <category> <name> - bierze item");
+        sender.sendMessage(ChatColor.AQUA + "/itemprovider give <category> <name> <player> [amount=1] - daje podanemu graczowi item");
     }
 }
