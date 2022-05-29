@@ -76,6 +76,9 @@ public final class ItemProvider extends JavaPlugin implements Listener {
     }
 
     public String getItemName(ItemStack item) {
+        if (item.getItemMeta() == null) {
+            return item.getType().name();
+        }
         String name = item.getItemMeta().getPersistentDataContainer().get(nameKey, PersistentDataType.STRING);
         if (name == null) {
             return item.getType().name();
