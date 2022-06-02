@@ -6,3 +6,4 @@ commands:
   itemprovider:
     description: ItemProviderCommand
     permission: itemprovider.admin
+    aliases: [itp]

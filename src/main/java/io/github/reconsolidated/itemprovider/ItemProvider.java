@@ -21,29 +21,64 @@ import org.bukkit.plugin.java.JavaPlugin;
 import javax.naming.Name;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class ItemProvider extends JavaPlugin implements Listener {
     private File dataFolder;
     private NamespacedKey nameKey;
+    private Map<String, Map<String, ItemStack>> categories;
 
     public ItemStack getItem(String category, String name, int amount) {
         if (category.equalsIgnoreCase("money")) {
             return getMoneyItem(name, amount);
         }
 
+        Map<String, ItemStack> cat = categories.get(category);
+        if (cat == null) {
+            return getNotFoundItem();
+        }
 
-        YamlConfiguration config = CustomConfig.loadCustomConfig(category, dataFolder, true);
-        if (config.contains(name)) {
-            return named(config.getItemStack(name), name);
-        } else {
-            Material material = Material.getMaterial(name);
-            if (material != null) {
-                return new ItemStack(material, amount);
-            } else {
-                return nameItem(new ItemStack(Material.DIRT, amount), Component.text("Item not found"));
+        if (cat.containsKey(name)) {
+            return cat.get(name);
+        }
+
+        return getNotFoundItem();
+
+
+    }
+
+    public void update() {
+        categories = new HashMap<>();
+
+        File[] files = dataFolder.listFiles();
+        if (files == null) return;
+        for (File file : files) {
+            if (file.isFile()) {
+                String category = file.getName().split("\\.")[0];
+                loadCategory(category);
             }
         }
+
+    }
+
+    private void loadCategory(String category) {
+        YamlConfiguration config = CustomConfig.loadCustomConfig(category, dataFolder, true);
+
+        if (config == null) return;
+
+        Map<String, ItemStack> cat = new HashMap<>();
+        for (String key : config.getKeys(false)) {
+            ItemStack item = config.getItemStack(key);
+            cat.put(key, item);
+        }
+
+        categories.put(category, cat);
+    }
+
+    private ItemStack getNotFoundItem(){
+        return nameItem(new ItemStack(Material.DIRT, 1), Component.text("Item not found"));
     }
 
     private ItemStack getMoneyItem(String name, int amount) {
@@ -58,12 +93,9 @@ public final class ItemProvider extends JavaPlugin implements Listener {
     }
 
     public List<ItemStack> getAllFromCategory(String category) {
-        YamlConfiguration config = CustomConfig.loadCustomConfig(category, dataFolder, true);
-        List<ItemStack> items = new ArrayList<>();
-        for (String key : config.getKeys(false)) {
-            items.add(named(config.getItemStack(key), key));
-        }
-        return items;
+        Map<String, ItemStack> cat = categories.get(category);
+        if (cat == null) return new ArrayList<>();
+        return new ArrayList<>(cat.values());
     }
 
     private ItemStack named(ItemStack item, String name) {
@@ -103,11 +135,13 @@ public final class ItemProvider extends JavaPlugin implements Listener {
         // Plugin shutdown logic
     }
 
-    public void addItem(ItemStack item, String name, String category) {
+    public boolean addItem(ItemStack item, String name, String category) {
         YamlConfiguration config = CustomConfig.loadCustomConfig(category, dataFolder, true);
-        assert config != null : "Couldn't load config: " + category;
+        if (config == null) return false;
         config.set(name, item);
         CustomConfig.saveCustomConfig(category, dataFolder, config);
+        categories.get(category).put(name, item);
+        return true;
     }
 
     private static ItemStack nameItem(ItemStack item, Component displayName) {
