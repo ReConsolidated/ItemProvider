@@ -44,8 +44,6 @@ public final class ItemProvider extends JavaPlugin implements Listener {
             if (cat.containsKey(name)) {
                 return cat.get(name).clone();
             }
-
-
         }
         return getNotFoundItem();
     }
@@ -124,6 +122,7 @@ public final class ItemProvider extends JavaPlugin implements Listener {
         // Plugin startup logic
         nameKey = new NamespacedKey(this, "item_name");
         dataFolder = getDataFolder();
+        update();
         getServer().getServicesManager().register(ItemProvider.class, this, this, ServicePriority.Normal);
         ExampleItems.init(this, this.getDataFolder());
 
