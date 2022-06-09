@@ -28,25 +28,26 @@ import java.util.Map;
 public final class ItemProvider extends JavaPlugin implements Listener {
     private File dataFolder;
     private NamespacedKey nameKey;
-    private Map<String, Map<String, ItemStack>> categories;
+    private Map<String, Map<String, ItemStack>> categories = new HashMap<>();
 
     public ItemStack getItem(String category, String name, int amount) {
         if (category.equalsIgnoreCase("money")) {
             return getMoneyItem(name, amount);
         }
 
-        Map<String, ItemStack> cat = categories.get(category);
-        if (cat == null) {
-            return getNotFoundItem();
-        }
+        if (categories != null) {
+            Map<String, ItemStack> cat = categories.get(category);
+            if (cat == null) {
+                return getNotFoundItem();
+            }
 
-        if (cat.containsKey(name)) {
-            return cat.get(name);
-        }
+            if (cat.containsKey(name)) {
+                return cat.get(name).clone();
+            }
 
+
+        }
         return getNotFoundItem();
-
-
     }
 
     public void update() {
@@ -140,6 +141,9 @@ public final class ItemProvider extends JavaPlugin implements Listener {
         if (config == null) return false;
         config.set(name, item);
         CustomConfig.saveCustomConfig(category, dataFolder, config);
+        if (!categories.containsKey(category)) {
+            categories.put(category, new HashMap<>());
+        }
         categories.get(category).put(name, item);
         return true;
     }
