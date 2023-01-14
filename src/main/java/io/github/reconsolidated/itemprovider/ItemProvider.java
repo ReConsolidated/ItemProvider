@@ -98,7 +98,9 @@ public final class ItemProvider extends JavaPlugin implements Listener {
     }
 
     private ItemStack named(ItemStack item, String name) {
-        item.getItemMeta().getPersistentDataContainer().set(nameKey, PersistentDataType.STRING, name);
+        ItemMeta meta = item.getItemMeta();
+        meta.getPersistentDataContainer().set(nameKey, PersistentDataType.STRING, name);
+        item.setItemMeta(meta);
         return item;
     }
 
@@ -138,6 +140,7 @@ public final class ItemProvider extends JavaPlugin implements Listener {
     public boolean addItem(ItemStack item, String name, String category) {
         YamlConfiguration config = CustomConfig.loadCustomConfig(category, dataFolder, true);
         if (config == null) return false;
+        named(item, name);
         config.set(name, item);
         CustomConfig.saveCustomConfig(category, dataFolder, config);
         if (!categories.containsKey(category)) {
@@ -154,7 +157,6 @@ public final class ItemProvider extends JavaPlugin implements Listener {
         return item;
     }
 
-
     @EventHandler
     public void onItemClick(PlayerInteractEvent event) {
         if (event.getItem() != null && event.getAction().isRightClick() && event.getPlayer().getInventory().getItemInMainHand().equals(event.getItem())) {
@@ -166,7 +168,6 @@ public final class ItemProvider extends JavaPlugin implements Listener {
             ItemStack item = event.getItem().clone();
             item.setAmount(1);
             event.getPlayer().getInventory().removeItem(item);
-
         }
     }
 }

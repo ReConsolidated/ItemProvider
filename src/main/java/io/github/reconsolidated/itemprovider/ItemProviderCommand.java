@@ -42,12 +42,33 @@ public class ItemProviderCommand implements CommandExecutor {
                         }
                         String category = args[1];
                         if (itemProvider.addItem(player.getInventory().getItemInMainHand(), name, category)) {
-                            sender.sendMessage(ChatColor.GREEN + "Item added!");
+                            sender.sendMessage(ChatColor.GREEN + "Item %s added!".formatted(name));
 
                         } else {
                             sender.sendMessage(ChatColor.RED + "Couldn't add item :(");
                         }
                     }
+                }
+            }
+        }
+        if (args[0].equalsIgnoreCase("addall")) {
+            if (args.length < 2) {
+                sender.sendMessage(ChatColor.RED + "Correct usage: ");
+                sender.sendMessage(ChatColor.AQUA + "/itemprovider addall <category> - adds all items from inventory");
+            } else {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    String category = args[1];
+                    int added = 0;
+                    for (ItemStack itemStack : player.getInventory().getContents()) {
+                        if (itemStack != null && !itemStack.getType().equals(Material.AIR)) {
+                            String name = UUID.randomUUID().toString();
+                            if (itemProvider.addItem(itemStack, name, category)) {
+                                added++;
+                            }
+                        }
+                    }
+                    sender.sendMessage(ChatColor.GREEN + "Added " + added + " items!");
                 }
             }
         }
@@ -79,7 +100,6 @@ public class ItemProviderCommand implements CommandExecutor {
                     try {
                         amount = Integer.parseInt(args[4]);
                     } catch (NumberFormatException e) {
-                        amount = 1;
                     }
                 }
                 String playerName = args[3];
@@ -103,6 +123,7 @@ public class ItemProviderCommand implements CommandExecutor {
     private void onHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.AQUA + "ItemProvider help: ");
         sender.sendMessage(ChatColor.AQUA + "/itemprovider add <category> [name] - dodaje item z ręki");
+        sender.sendMessage(ChatColor.AQUA + "/itemprovider addall <category> - dodaje itemy z inventory");
         sender.sendMessage(ChatColor.AQUA + "/itemprovider get <category> <name> - bierze item");
         sender.sendMessage(ChatColor.AQUA + "/itemprovider reload");
         sender.sendMessage(ChatColor.AQUA + "/itemprovider give <category> <name> <player> [amount=1] - daje podanemu graczowi item");
